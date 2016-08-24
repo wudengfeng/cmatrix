@@ -25,13 +25,16 @@ Window::Window(QWidget *parent, bool fs)
     , fontSize(24)
     , randMin(33)
     , randMax(126)
+    , nowSpeed(50)
 {
     qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
     setupWindow();
     initCMatrix();
 
     QTimer *timer = new QTimer;
-    timer->start(20);
+
+    timer->start(nowSpeed);
+
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCMatrix()));
 
     SetWindowLong((HWND)winId(), GWL_EXSTYLE
@@ -57,9 +60,14 @@ void Window::paintGL()
         for (int i = 0; i < rows; i++) {
             glRasterPos2i(j * fontSize, i * fontSize);
             glColor3f(0.0, 1.0, 0.0);
-            if((i + startChar[j]) % rows == (space[j] + rows - 1) % rows)
+            if(i + startChar[j] < 0){
+                printChar(' ');
+                continue;
+            }
+
+            if((i + startChar[j]) % (length[j] + space[j]) == (space[j] + length[j] + space[j] - 1) % (length[j] + space[j]))
                 glColor3f(1.0, 1.0, 1.0);
-            printChar(cmatrix[(i + startChar[j]) % rows][j]);
+            printChar(cmatrix[(i + startChar[j]) % (length[j] + space[j])][j]);
         }
     }
 }
@@ -106,7 +114,6 @@ void Window::initCMatrix()
 {
     rows = 2 * height / fontSize;
     cols = width / fontSize;
-
     cmatrix = new char *[rows];
     for (int i = 0; i < rows; i++) {
         cmatrix[i] = new char[cols];
@@ -127,7 +134,7 @@ void Window::setCols(int j)
     length[j] = qrand() % (rows / 2 - 3) + 3;
     space[j] = qrand() % (rows / 2 - length[j]);
     updateFlag[j] = rows / 2 + length[j] + space[j];
-    startChar[j] = length[j];
+    startChar[j] = length[j] - rows;
     for (int i = 0; i < space[j]; i++) {
         cmatrix[i][j] = ' ';
     }
@@ -143,7 +150,8 @@ void Window::updateCMatrix()
 {
     for (int j = 0; j < cols; j++) {
         startChar[j] ++;
-        startChar[j] %= rows;
+        if(startChar[j] >= (length[j] + space[j]))
+            startChar[j] -= length[j] + space[j];
     }
 
     update();
