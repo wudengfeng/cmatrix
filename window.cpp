@@ -31,8 +31,11 @@ Window::Window(QWidget *parent, bool fs)
     initCMatrix();
 
     QTimer *timer = new QTimer;
-    timer->start(50);
+    timer->start(20);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCMatrix()));
+
+    SetWindowLong((HWND)winId(), GWL_EXSTYLE
+                  , GetWindowLong((HWND)winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
 }
 
 void Window::initializeGL()
