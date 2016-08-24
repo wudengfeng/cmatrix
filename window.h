@@ -40,6 +40,9 @@ private:
     int *length;
     int *updateFlag;
     int *startChar;
+    QTimer *timer;
+
+    int nowSpeed;
 
     int rows;
     int cols;
