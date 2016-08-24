@@ -1,6 +1,7 @@
 #include <QtWidgets>
 #include <QtOpenGL>
 #include <QtOpenGL/glut>
+#include <QtOpenGL/glut.h>
 #include "window.h"
 
 #define MAX_CHAR 128
@@ -30,7 +31,7 @@ Window::Window(QWidget *parent, bool fs)
     initCMatrix();
 
     QTimer *timer = new QTimer;
-    timer->start(100);
+    timer->start(50);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCMatrix()));
 }
 
@@ -52,7 +53,10 @@ void Window::paintGL()
     for (int j = 0; j < cols; j++) {
         for (int i = 0; i < rows; i++) {
             glRasterPos2i(j * fontSize, i * fontSize);
-            printChar(cmatrix[i][j]);
+            glColor3f(0.0, 1.0, 0.0);
+            if((i + startChar[j]) % rows == (space[j] + rows - 1) % rows)
+                glColor3f(1.0, 1.0, 1.0);
+            printChar(cmatrix[(i + startChar[j]) % rows][j]);
         }
     }
 }
@@ -108,6 +112,7 @@ void Window::initCMatrix()
     space = new int[cols];
     length = new int[cols];
     updateFlag = new int[cols];
+    startChar = new int[cols];
 
     for (int j = 0; j < cols; j++) {
         setCols(j);
@@ -119,14 +124,14 @@ void Window::setCols(int j)
     length[j] = qrand() % (rows / 2 - 3) + 3;
     space[j] = qrand() % (rows / 2 - length[j]);
     updateFlag[j] = rows / 2 + length[j] + space[j];
-
-    for (int i = 0; i < rows / 2 + space[j]; i++) {
+    startChar[j] = length[j];
+    for (int i = 0; i < space[j]; i++) {
         cmatrix[i][j] = ' ';
     }
-    for (int i = rows / 2 + space[j]; i < rows / 2 + space[j] + length[j]; i++) {
+    for (int i = space[j]; i < space[j] + length[j]; i++) {
         cmatrix[i][j] = qrand() % (randMax - randMin) + randMin;
     }
-    for (int i = rows / 2 + space[j] + length[j]; i < rows; i++) {
+    for (int i = space[j] + length[j]; i < rows; i++) {
         cmatrix[i][j] = ' ';
     }
 }
@@ -134,15 +139,8 @@ void Window::setCols(int j)
 void Window::updateCMatrix()
 {
     for (int j = 0; j < cols; j++) {
-        updateFlag[j]--;
-
-        if (updateFlag[j] == 0) {
-            setCols(j);
-        } else {
-            for (int i = 0; i < rows - 1; i++) {
-                cmatrix[i][j] = cmatrix[i + 1][j];
-            }
-        }
+        startChar[j] ++;
+        startChar[j] %= rows;
     }
 
     update();
