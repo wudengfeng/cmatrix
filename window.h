@@ -39,6 +39,7 @@ private:
     int *space;
     int *length;
     int *updateFlag;
+    int *startChar;
 
     int rows;
     int cols;
