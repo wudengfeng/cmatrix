@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/cmatrix.ico</file>
+        <file>resources/cmatrix.png</file>
+        <file>resources/cmatrix.rc</file>
+    </qresource>
+</RCC>

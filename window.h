@@ -4,6 +4,12 @@
 #include <QWidget>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QSystemTrayIcon>
+
+QT_BEGIN_NAMESPACE
+class QMenu;
+class QAction;
+QT_END_NAMESPACE
 
 class Window : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -23,8 +29,18 @@ private:
     void initCMatrix();
     void setCols(int);
     void printChar(const char);
+
+    void setupTrayIcon();
+    void createTrayIconAction();
+    void createTrayIconMenu();
+
 private slots:
     void updateCMatrix();
+
+private:
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayIconMenu;
+    QAction *quitAction;
 
 private:
     bool fullscene;

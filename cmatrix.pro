@@ -1,5 +1,7 @@
 QT += widgets opengl
 
+RC_FILE = ./resources/cmatrix.rc
+
 LIBS += -lwinmm \
         -lopengl32 \
         -lglu32 \
@@ -15,3 +17,6 @@ SOURCES += main.cpp \
 
 HEADERS += \
     window.h
+
+RESOURCES += \
+    resources.qrc

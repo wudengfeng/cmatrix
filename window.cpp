@@ -29,16 +29,12 @@ Window::Window(QWidget *parent, bool fs)
 {
     qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
     setupWindow();
+    setupTrayIcon();
     initCMatrix();
 
     QTimer *timer = new QTimer;
-
     timer->start(nowSpeed);
-
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCMatrix()));
-
-    SetWindowLong((HWND)winId(), GWL_EXSTYLE
-                  , GetWindowLong((HWND)winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
 }
 
 void Window::initializeGL()
@@ -108,6 +104,10 @@ void Window::setupWindow()
                    |Qt::WindowFullScreen);
     setFocusPolicy(Qt::NoFocus);
     setWindowOpacity(1.0);
+    setWindowIcon(QIcon(":/resources/cmatrix.ico"));
+
+    SetWindowLong((HWND)winId(), GWL_EXSTYLE
+                  , GetWindowLong((HWND)winId(), GWL_EXSTYLE) | WS_EX_TRANSPARENT | WS_EX_LAYERED);
 }
 
 void Window::initCMatrix()
@@ -168,4 +168,32 @@ void Window::printChar(const char ch)
         wglUseFontBitmaps(wglGetCurrentDC(), 0, MAX_CHAR, lists);
     }
     glCallList(lists + ch);
+}
+
+void Window::setupTrayIcon()
+{
+    trayIcon = new QSystemTrayIcon(this);
+    trayIcon->setIcon(QIcon(":/resources/cmatrix.ico"));
+    trayIcon->setToolTip(tr("PaShan cmatrix"));
+
+    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason))
+            , this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
+
+    createTrayIconAction();
+    createTrayIconMenu();
+
+    trayIcon->show();
+}
+
+void Window::createTrayIconAction()
+{
+    quitAction = new QAction(tr("quit"), this);
+    connect(quitAction, SIGNAL(triggered(bool)), this, SLOT(close()));
+}
+
+void Window::createTrayIconMenu()
+{
+    trayIconMenu = new QMenu(this);
+    trayIconMenu->addAction(quitAction);
+    trayIcon->setContextMenu(trayIconMenu);
 }
