@@ -25,7 +25,7 @@ Window::Window(QWidget *parent, bool fs)
     , fontSize(24)
     , randMin(33)
     , randMax(126)
-    , nowSpeed(50)
+    , nowSpeed(100)
 {
     qsrand(QTime(0, 0, 0).secsTo(QTime::currentTime()));
     setupWindow();
@@ -54,18 +54,30 @@ void Window::paintGL()
 
     for (int j = 0; j < cols; j++) {
         for (int i = 0; i < rows; i++) {
-            glRasterPos2i(j * fontSize, i * fontSize);
+            glRasterPos2i(j * fontSize, (rows - i - 1) * fontSize);
             glColor3f(0.0, 1.0, 0.0);
-            if(i + startChar[j] < 0){
-                printChar(' ');
-                continue;
-            }
 
-            if((i + startChar[j]) % (length[j] + space[j]) == (space[j] + length[j] + space[j] - 1) % (length[j] + space[j]))
-                glColor3f(1.0, 1.0, 1.0);
-            printChar(cmatrix[(i + startChar[j]) % (length[j] + space[j])][j]);
+            if(startChar[j] +length[j] < rows){
+                if((startChar[j] + length[j] -2 + rows) % rows  >= i && (startChar[j] + length[j] - 2 - whiteTail[j] + rows) % rows < i)
+                    glColor3f(1.0, 1.0, 1.0);
+                if(i < startChar[j] || i >= startChar[j] + length[j])
+                    printChar(' ');
+                else
+                    printChar(cmatrix[i][j]);
+            }
+            else{
+                if(startChar[j] + length[j] -2 >= i + rows && startChar[j] + length[j] - 2 - whiteTail[j] < i + rows)
+                    glColor3f(1.0, 1.0, 1.0);
+                if(i >= startChar[j] || i < startChar[j] + length[j] - rows)
+                    printChar(cmatrix[i][j]);
+                else
+                    printChar(' ');
+            }
+            if((startChar[j] + length[j] -1 + rows) % rows  == i)
+                setRandomCharactor(i, j);
         }
     }
+
 }
 
 void Window::resizeGL(int width, int height)
@@ -112,7 +124,7 @@ void Window::setupWindow()
 
 void Window::initCMatrix()
 {
-    rows = 2 * height / fontSize;
+    rows = height / fontSize;
     cols = width / fontSize;
     cmatrix = new char *[rows];
     for (int i = 0; i < rows; i++) {
@@ -123,6 +135,7 @@ void Window::initCMatrix()
     length = new int[cols];
     updateFlag = new int[cols];
     startChar = new int[cols];
+    whiteTail = new int[cols];
 
     for (int j = 0; j < cols; j++) {
         setCols(j);
@@ -131,27 +144,23 @@ void Window::initCMatrix()
 
 void Window::setCols(int j)
 {
-    length[j] = qrand() % (rows / 2 - 3) + 3;
-    space[j] = qrand() % (rows / 2 - length[j]);
+    length[j] = qrand() % (rows  - 3) + 3;
+    space[j] = qrand() % (rows  - length[j]);
     updateFlag[j] = rows / 2 + length[j] + space[j];
-    startChar[j] = length[j] - rows;
-    for (int i = 0; i < space[j]; i++) {
-        cmatrix[i][j] = ' ';
-    }
-    for (int i = space[j]; i < space[j] + length[j]; i++) {
-        cmatrix[i][j] = qrand() % (randMax - randMin) + randMin;
-    }
-    for (int i = space[j] + length[j]; i < rows; i++) {
-        cmatrix[i][j] = ' ';
-    }
+    startChar[j] = -space[j]  - rows / 2;
+    whiteTail[j] = qrand() % 3;
+    for(int i = 0; i < rows; i++)
+        setRandomCharactor(i,j);
 }
+
+
 
 void Window::updateCMatrix()
 {
     for (int j = 0; j < cols; j++) {
         startChar[j] ++;
-        if(startChar[j] >= (length[j] + space[j]))
-            startChar[j] -= length[j] + space[j];
+        if(startChar[j] >= rows)
+            startChar[j] -= rows;
     }
 
     update();
@@ -196,4 +205,9 @@ void Window::createTrayIconMenu()
     trayIconMenu = new QMenu(this);
     trayIconMenu->addAction(quitAction);
     trayIcon->setContextMenu(trayIconMenu);
+}
+
+void Window::setRandomCharactor(int x, int y)
+{
+    cmatrix[x][y] =  qrand() % (randMax - randMin) + randMin;
 }
