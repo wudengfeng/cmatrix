@@ -34,6 +34,8 @@ private:
     void createTrayIconAction();
     void createTrayIconMenu();
 
+    void setRandomCharactor(int x, int y);
+
 private slots:
     void updateCMatrix();
 
@@ -56,6 +58,7 @@ private:
     int *length;
     int *updateFlag;
     int *startChar;
+    int *whiteTail;
     QTimer *timer;
 
     int nowSpeed;
