@@ -185,9 +185,6 @@ void Window::setupTrayIcon()
     trayIcon->setIcon(QIcon(":/resources/cmatrix.ico"));
     trayIcon->setToolTip(tr("PaShan cmatrix"));
 
-    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason))
-            , this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
-
     createTrayIconAction();
     createTrayIconMenu();
 
